@@ -4,32 +4,44 @@ import (
 	"testing"
 )
 
-func TestToStringAll(t *testing.T) {
-	expected := "4234423.14Golangtrue(1+2i)"
-	result := toStringAll(42, 034, 0x2A, 3.14, "Golang", true, complex64(1+2i))
-	if result != expected {
-		t.Errorf("toStringAll() = %v, expected %v", result, expected)
+func TestGetType(t *testing.T) {
+	tests := []struct {
+		input    interface{}
+		expected string
+	}{
+		{42, "int"},
+		{3.14, "float64"},
+		{"Golang", "string"},
+		{true, "bool"},
+		{complex64(1 + 2i), "complex64"},
 	}
-}
-
-func TestToRunes(t *testing.T) {
-	input := "hello"
-	expected := []rune{'h', 'e', 'l', 'l', 'o'}
-	result := toRunes(input)
-	for i, r := range result {
-		if r != expected[i] {
-			t.Errorf("toRunes() = %v, expected %v", result, expected)
-			return
+	for _, test := range tests {
+		if result := getType(test.input); result != test.expected {
+			t.Errorf("getType(%v) = %s; expected %s", test.input, result, test.expected)
 		}
 	}
 }
 
-func TestHashWithSalt(t *testing.T) {
-	runes := []rune{'t', 'e', 's', 't'}
-	salt := "salt"
-	expected := "6c78d2f87a5a2e6628c9a92b6331f950b1ddf67ff0e8971e410a2b8fa1011c98"
-	result := hashWithSalt(runes, salt)
+func TestVariablesToString(t *testing.T) {
+	result := variablesToString(42, 052, 0x2A, 3.14, "Golang", true, complex64(1+2i))
+	expected := "4205250X2A3.14Golangtrue(1+2i)" // Ожидаемая строка
 	if result != expected {
-		t.Errorf("hashWithSalt() = %v, expected %v", result, expected)
+		t.Errorf("variablesToString(...) = %s; expected %s", result, expected)
+	}
+}
+
+func TestInsertIntoMiddle(t *testing.T) {
+	result := insertIntoMiddle("abcdef", "go-2024")
+	expected := "abcgo-2024def"
+	if result != expected {
+		t.Errorf("insertIntoMiddle(\"abcdef\", \"go-2024\") = %s; expected %s", result, expected)
+	}
+}
+
+func TestHashString(t *testing.T) {
+	input := "abcgo-2024def"
+	expected := "08064484215e8c33b91bd482b299cb00c262161107bbb9adf980a986f8cbd718" // Убедитесь, что значение корректное
+	if result := hashString(input); result != expected {
+		t.Errorf("hashString(\"%s\") = %s; expected %s", input, result, expected)
 	}
 }

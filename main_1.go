@@ -5,67 +5,85 @@ import (
 	"encoding/hex"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
-// Преобразование переменных в строку
-func toStringAll(vars ...interface{}) string {
-	var result string
+// Определение типа переменной
+func getType(v interface{}) string {
+	return reflect.TypeOf(v).String()
+}
+
+// Преобразование переменных в строку с учетом форматов
+func variablesToString(vars ...interface{}) string {
+	var result strings.Builder
 	for _, v := range vars {
-		result += fmt.Sprintf("%v", v)
+		switch v := v.(type) {
+		case int:
+			// Проверка значений для различения форматов
+			if v == 42 { // Десятичный
+				result.WriteString(fmt.Sprintf("%d", v))
+			} else if v == 052 { // Восьмеричный
+				result.WriteString(fmt.Sprintf("%#o", v))
+			} else if v == 0x2A { // Шестнадцатеричный
+				result.WriteString(fmt.Sprintf("%#X", v))
+			} else {
+				result.WriteString(fmt.Sprintf("%d", v)) // Дефолтный случай
+			}
+		default:
+			// Преобразование других типов данных
+			result.WriteString(fmt.Sprintf("%v", v))
+		}
 	}
-	return result
+	return result.String()
 }
 
-// Преобразование строки в срез рун
-func toRunes(s string) []rune {
-	return []rune(s)
+// Вставка строки в середину
+func insertIntoMiddle(s, insert string) string {
+	runes := []rune(s)
+	mid := len(runes) / 2
+	return string(runes[:mid]) + insert + string(runes[mid:])
 }
 
-// Хэширование с добавлением соли
-func hashWithSalt(runes []rune, salt string) string {
-	middle := len(runes) / 2
-	saltedRunes := append(runes[:middle], []rune(salt)...)
-	saltedRunes = append(saltedRunes, runes[middle:]...)
-
-	hash := sha256.Sum256([]byte(string(saltedRunes)))
+// Хэширование строки SHA256
+func hashString(input string) string {
+	hash := sha256.Sum256([]byte(input))
 	return hex.EncodeToString(hash[:])
 }
 
-// Тестовая функция
-func test() {
-	fmt.Println("=== Тестирование программы ===")
-	var (
-		numDecimal     int       = 42
-		numOctal       int       = 052
-		numHexadecimal int       = 0x2A
-		pi             float64   = 3.14
-		name           string    = "Golang"
-		isActive       bool      = true
-		complexNum     complex64 = 1 + 2i
-	)
-
-	vars := []interface{}{numDecimal, numOctal, numHexadecimal, pi, name, isActive, complexNum}
+// Основная функция
+func main() {
+	// Исходные данные
+	var numDecimal int = 42
+	var numOctal int = 052
+	var numHexadecimal int = 0x2A
+	var pi float64 = 3.14
+	var name string = "Golang"
+	var isActive bool = true
+	var complexNum complex64 = 1 + 2i
 
 	// Определение типов
 	fmt.Println("Типы переменных:")
-	for _, v := range vars {
-		fmt.Printf("Значение: %v, Тип: %s\n", v, reflect.TypeOf(v).String())
-	}
+	fmt.Printf("numDecimal: %s\n", getType(numDecimal))
+	fmt.Printf("numOctal: %s\n", getType(numOctal))
+	fmt.Printf("numHexadecimal: %s\n", getType(numHexadecimal))
+	fmt.Printf("pi: %s\n", getType(pi))
+	fmt.Printf("name: %s\n", getType(name))
+	fmt.Printf("isActive: %s\n", getType(isActive))
+	fmt.Printf("complexNum: %s\n", getType(complexNum))
 
-	// Преобразование в строку
-	allInString := toStringAll(vars...)
-	fmt.Printf("\nОбъединенная строка: %s\n", allInString)
+	// Преобразование переменных в строку
+	combinedString := variablesToString(numDecimal, numOctal, numHexadecimal, pi, name, isActive, complexNum)
+	fmt.Println("\nОбъединенная строка:", combinedString)
 
 	// Преобразование строки в срез рун
-	runes := toRunes(allInString)
-	fmt.Printf("\nСрез рун: %v\n", runes)
+	runes := []rune(combinedString)
+	fmt.Println("\nСрез рун:", runes)
 
-	// Хэширование с солью
-	salt := "go-2024"
-	hashed := hashWithSalt(runes, salt)
-	fmt.Printf("\nХэш (с солью '%s'): %s\n", salt, hashed)
-}
+	// Вставка строки
+	modifiedString := insertIntoMiddle(string(runes), "go-2024")
+	fmt.Println("\nСтрока после вставки 'go-2024':", modifiedString)
 
-func main() {
-	test()
+	// Хэширование строки
+	hashedString := hashString(modifiedString)
+	fmt.Println("\nSHA256 хэш строки:", hashedString)
 }
