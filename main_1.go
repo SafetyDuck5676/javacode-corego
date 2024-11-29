@@ -19,15 +19,16 @@ func variablesToString(vars ...interface{}) string {
 	for _, v := range vars {
 		switch v := v.(type) {
 		case int:
-			// Проверка значений для различения форматов
-			if v == 42 { // Десятичный
+			// Для целых чисел нужно выводить их в соответствующем формате
+			if v < 0 {
+				// Для отрицательных чисел, выводим как обычное целое
 				result.WriteString(fmt.Sprintf("%d", v))
-			} else if v == 052 { // Восьмеричный
-				result.WriteString(fmt.Sprintf("%#o", v))
-			} else if v == 0x2A { // Шестнадцатеричный
-				result.WriteString(fmt.Sprintf("%#X", v))
 			} else {
-				result.WriteString(fmt.Sprintf("%d", v)) // Дефолтный случай
+				// Для положительных чисел используем стандартное представление
+				// Мы будем выводить как: десятичное, восьмеричное и шестнадцатеричное.
+				result.WriteString(fmt.Sprintf("%d", v))  // Десятичное число по умолчанию
+				result.WriteString(fmt.Sprintf("%#o", v)) // Восьмеричное число с префиксом
+				result.WriteString(fmt.Sprintf("%#X", v)) // Шестнадцатеричное число с префиксом
 			}
 		default:
 			// Преобразование других типов данных

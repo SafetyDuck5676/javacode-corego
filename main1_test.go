@@ -24,7 +24,7 @@ func TestGetType(t *testing.T) {
 
 func TestVariablesToString(t *testing.T) {
 	result := variablesToString(42, 052, 0x2A, 3.14, "Golang", true, complex64(1+2i))
-	expected := "4205250X2A3.14Golangtrue(1+2i)" // Ожидаемая строка
+	expected := "4242420520X2A3.14Golangtrue(1+2i)" // Ожидаемая строка с разными системами счисления
 	if result != expected {
 		t.Errorf("variablesToString(...) = %s; expected %s", result, expected)
 	}
