@@ -1,71 +1,77 @@
 package main
 
-import (
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
-	"reflect"
-)
+import "fmt"
 
-// Преобразование переменных в строку
-func toStringAll(vars ...interface{}) string {
-	var result string
-	for _, v := range vars {
-		result += fmt.Sprintf("%v", v)
+// StringIntMap представляет структуру данных для хранения пар "строка - число".
+type StringIntMap struct {
+	data map[string]int
+}
+
+// Конструктор для создания новой StringIntMap
+func NewStringIntMap() *StringIntMap {
+	return &StringIntMap{
+		data: make(map[string]int),
 	}
-	return result
 }
 
-// Преобразование строки в срез рун
-func toRunes(s string) []rune {
-	return []rune(s)
+// Метод Add добавляет новую пару "ключ-значение" в карту
+func (m *StringIntMap) Add(key string, value int) {
+	m.data[key] = value
 }
 
-// Хэширование с добавлением соли
-func hashWithSalt(runes []rune, salt string) string {
-	middle := len(runes) / 2
-	saltedRunes := append(runes[:middle], []rune(salt)...)
-	saltedRunes = append(saltedRunes, runes[middle:]...)
-
-	hash := sha256.Sum256([]byte(string(saltedRunes)))
-	return hex.EncodeToString(hash[:])
+// Метод Remove удаляет элемент по ключу из карты
+func (m *StringIntMap) Remove(key string) {
+	delete(m.data, key)
 }
 
-// Тестовая функция
-func test() {
-	fmt.Println("=== Тестирование программы ===")
-	var (
-		numDecimal     int       = 42
-		numOctal       int       = 052
-		numHexadecimal int       = 0x2A
-		pi             float64   = 3.14
-		name           string    = "Golang"
-		isActive       bool      = true
-		complexNum     complex64 = 1 + 2i
-	)
-
-	vars := []interface{}{numDecimal, numOctal, numHexadecimal, pi, name, isActive, complexNum}
-
-	// Определение типов
-	fmt.Println("Типы переменных:")
-	for _, v := range vars {
-		fmt.Printf("Значение: %v, Тип: %s\n", v, reflect.TypeOf(v).String())
+// Метод Copy возвращает копию карты
+func (m *StringIntMap) Copy() map[string]int {
+	newMap := make(map[string]int)
+	for k, v := range m.data {
+		newMap[k] = v
 	}
-
-	// Преобразование в строку
-	allInString := toStringAll(vars...)
-	fmt.Printf("\nОбъединенная строка: %s\n", allInString)
-
-	// Преобразование строки в срез рун
-	runes := toRunes(allInString)
-	fmt.Printf("\nСрез рун: %v\n", runes)
-
-	// Хэширование с солью
-	salt := "go-2024"
-	hashed := hashWithSalt(runes, salt)
-	fmt.Printf("\nХэш (с солью '%s'): %s\n", salt, hashed)
+	return newMap
 }
 
+// Метод Exists проверяет, существует ли ключ в карте
+func (m *StringIntMap) Exists(key string) bool {
+	_, exists := m.data[key]
+	return exists
+}
+
+// Метод Get возвращает значение по ключу и булевый флаг успешности операции
+func (m *StringIntMap) Get(key string) (int, bool) {
+	value, exists := m.data[key]
+	return value, exists
+}
+
+// Пример использования StringIntMap
 func main() {
-	test()
+	// Создаем новый экземпляр StringIntMap
+	m := NewStringIntMap()
+
+	// Добавляем элементы
+	m.Add("one", 1)
+	m.Add("two", 2)
+	m.Add("three", 3)
+	fmt.Println("Карта после добавления элементов:", m.data)
+
+	// Проверяем наличие ключа
+	fmt.Println("Существует ли ключ 'two'? ->", m.Exists("two"))
+	fmt.Println("Существует ли ключ 'four'? ->", m.Exists("four"))
+
+	// Получаем значение по ключу
+	value, found := m.Get("three")
+	fmt.Printf("Значение для ключа 'three': %d (найдено: %t)\n", value, found)
+
+	// Копируем карту
+	copiedMap := m.Copy()
+	fmt.Println("Копия карты:", copiedMap)
+
+	// Удаляем элемент
+	m.Remove("two")
+	fmt.Println("Карта после удаления ключа 'two':", m.data)
+
+	// Проверяем независимость копии
+	fmt.Println("Копия карты после изменения оригинала:", copiedMap)
 }

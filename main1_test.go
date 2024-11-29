@@ -1,35 +1,62 @@
 package main
 
 import (
+	"reflect"
 	"testing"
 )
 
-func TestToStringAll(t *testing.T) {
-	expected := "4234423.14Golangtrue(1+2i)"
-	result := toStringAll(42, 034, 0x2A, 3.14, "Golang", true, complex64(1+2i))
-	if result != expected {
-		t.Errorf("toStringAll() = %v, expected %v", result, expected)
+func TestAddAndGet(t *testing.T) {
+	m := NewStringIntMap()
+	m.Add("key1", 100)
+	m.Add("key2", 200)
+
+	if val, exists := m.Get("key1"); !exists || val != 100 {
+		t.Errorf("Get('key1') = %v, %v; expected 100, true", val, exists)
+	}
+
+	if val, exists := m.Get("key2"); !exists || val != 200 {
+		t.Errorf("Get('key2') = %v, %v; expected 200, true", val, exists)
 	}
 }
 
-func TestToRunes(t *testing.T) {
-	input := "hello"
-	expected := []rune{'h', 'e', 'l', 'l', 'o'}
-	result := toRunes(input)
-	for i, r := range result {
-		if r != expected[i] {
-			t.Errorf("toRunes() = %v, expected %v", result, expected)
-			return
-		}
+func TestRemove(t *testing.T) {
+	m := NewStringIntMap()
+	m.Add("key1", 100)
+	m.Remove("key1")
+
+	if _, exists := m.Get("key1"); exists {
+		t.Errorf("Remove('key1') failed; key1 should not exist")
 	}
 }
 
-func TestHashWithSalt(t *testing.T) {
-	runes := []rune{'t', 'e', 's', 't'}
-	salt := "salt"
-	expected := "6c78d2f87a5a2e6628c9a92b6331f950b1ddf67ff0e8971e410a2b8fa1011c98"
-	result := hashWithSalt(runes, salt)
-	if result != expected {
-		t.Errorf("hashWithSalt() = %v, expected %v", result, expected)
+func TestExists(t *testing.T) {
+	m := NewStringIntMap()
+	m.Add("key1", 100)
+
+	if !m.Exists("key1") {
+		t.Errorf("Exists('key1') = false; expected true")
+	}
+
+	if m.Exists("key2") {
+		t.Errorf("Exists('key2') = true; expected false")
+	}
+}
+
+func TestCopy(t *testing.T) {
+	m := NewStringIntMap()
+	m.Add("key1", 100)
+	m.Add("key2", 200)
+
+	copied := m.Copy()
+
+	// Проверяем, что копия идентична оригиналу
+	if !reflect.DeepEqual(m.data, copied) {
+		t.Errorf("Copy() = %v; expected %v", copied, m.data)
+	}
+
+	// Проверяем, что изменения в оригинале не влияют на копию
+	m.Remove("key1")
+	if _, exists := copied["key1"]; !exists {
+		t.Errorf("Original map changed; copied map should remain unchanged")
 	}
 }
